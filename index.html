@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>你有多了解我？👻 恐怖冷知識測驗</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Creepster&family=Noto+Serif+TC:wght@400;700;900&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0a0505;
+    --blood: #b3001b;
+    --blood-bright: #ff1f3d;
+    --text: #e8dcdc;
+    --muted: #8a7a7a;
+    --card: rgba(20, 8, 8, 0.85);
+    --border: #3a1414;
+    --good: #3fbf6f;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  body {
+    min-height: 100vh;
+    background: radial-gradient(ellipse at top, #2a0808 0%, var(--bg) 60%) fixed, var(--bg);
+    color: var(--text);
+    font-family: "Noto Serif TC", "Microsoft JhengHei", serif;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 24px 16px;
+    overflow-x: hidden;
+  }
+  /* 霧氣效果 */
+  body::before {
+    content: "";
+    position: fixed; inset: 0;
+    background: radial-gradient(circle at 20% 80%, rgba(255,255,255,0.04), transparent 40%),
+                radial-gradient(circle at 80% 30%, rgba(255,255,255,0.03), transparent 40%);
+    animation: fog 12s ease-in-out infinite alternate;
+    pointer-events: none;
+  }
+  @keyframes fog { from { transform: translateX(-30px); } to { transform: translateX(30px); } }
+
+  .card {
+    position: relative;
+    width: 100%;
+    max-width: 560px;
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 32px 24px;
+    box-shadow: 0 0 40px rgba(179, 0, 27, 0.25), inset 0 0 30px rgba(0,0,0,0.6);
+    text-align: center;
+  }
+  .screen { display: none; }
+  .screen.active { display: block; animation: fadeIn 0.5s ease; }
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+
+  .ghost { font-size: 64px; animation: float 3s ease-in-out infinite; display: inline-block; }
+  @keyframes float { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
+
+  h1 {
+    font-family: "Creepster", "Noto Serif TC", serif;
+    color: var(--blood-bright);
+    font-size: clamp(28px, 7vw, 42px);
+    letter-spacing: 2px;
+    margin: 12px 0;
+    text-shadow: 0 0 12px rgba(255, 31, 61, 0.6), 2px 2px 0 #000;
+    animation: flicker 4s infinite;
+  }
+  h1.zh { font-family: "Noto Serif TC", serif; font-weight: 900; }
+  @keyframes flicker {
+    0%, 18%, 22%, 25%, 53%, 57%, 100% { opacity: 1; }
+    20%, 24%, 55% { opacity: 0.35; }
+  }
+  p.sub { color: var(--muted); line-height: 1.8; margin: 8px 0 24px; }
+
+  button {
+    font-family: inherit;
+    cursor: pointer;
+    border: none;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .btn-main {
+    background: var(--blood);
+    color: #fff;
+    font-size: 18px;
+    font-weight: 700;
+    padding: 14px 40px;
+    border-radius: 8px;
+    box-shadow: 0 0 20px rgba(179, 0, 27, 0.5);
+    transition: transform 0.15s, box-shadow 0.15s;
+  }
+  .btn-main:hover { transform: scale(1.05); box-shadow: 0 0 30px rgba(255, 31, 61, 0.7); }
+
+  .progress { color: var(--muted); font-size: 14px; letter-spacing: 2px; }
+  .bar { height: 4px; background: #1e0a0a; border-radius: 2px; margin: 10px 0 24px; overflow: hidden; }
+  .bar-fill { height: 100%; background: var(--blood-bright); width: 0; transition: width 0.4s; box-shadow: 0 0 8px var(--blood-bright); }
+
+  .question { font-size: clamp(19px, 5vw, 23px); font-weight: 700; line-height: 1.6; margin: 0 0 24px; }
+
+  .options { display: grid; gap: 12px; }
+  .option {
+    background: #160909;
+    color: var(--text);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 14px 16px;
+    font-size: 17px;
+    text-align: left;
+    transition: border-color 0.2s, background 0.2s;
+  }
+  .option:hover:not(:disabled) { border-color: var(--blood-bright); background: #220c0c; }
+  .option .letter { color: var(--blood-bright); font-weight: 900; margin-right: 10px; }
+  .option.correct { border-color: var(--good); background: rgba(63, 191, 111, 0.15); }
+  .option.wrong { border-color: var(--blood-bright); background: rgba(255, 31, 61, 0.18); animation: shake 0.4s; }
+  .option:disabled { cursor: default; }
+  @keyframes shake {
+    0%,100% { transform: translateX(0); }
+    25% { transform: translateX(-6px); }
+    75% { transform: translateX(6px); }
+  }
+
+  .feedback { min-height: 28px; margin: 18px 0 8px; font-weight: 700; font-size: 18px; }
+  .feedback.good { color: var(--good); }
+  .feedback.bad { color: var(--blood-bright); }
+  #nextBtn { margin-top: 8px; visibility: hidden; }
+
+  .score {
+    font-family: "Creepster", serif;
+    font-size: 72px;
+    color: var(--blood-bright);
+    text-shadow: 0 0 20px rgba(255, 31, 61, 0.6);
+    margin: 8px 0;
+  }
+  .verdict { font-size: 20px; font-weight: 700; margin: 8px 0 12px; }
+
+  /* 答錯時畫面閃紅 */
+  .flash { position: fixed; inset: 0; background: rgba(179, 0, 27, 0.35); pointer-events: none; opacity: 0; }
+  .flash.on { animation: flash 0.5s; }
+  @keyframes flash { 0% { opacity: 1; } 100% { opacity: 0; } }
+
+  .drip { position: absolute; top: 0; left: 0; right: 0; height: 18px; overflow: hidden; border-radius: 12px 12px 0 0; }
+  .drip span {
+    position: absolute; top: 0; width: 6px; background: var(--blood);
+    border-radius: 0 0 4px 4px; animation: drip 3s ease-in infinite;
+  }
+  @keyframes drip { 0% { height: 0; } 60% { height: 18px; } 100% { height: 18px; opacity: 0; } }
+</style>
+</head>
+<body>
+<div class="flash" id="flash"></div>
+
+<main class="card">
+  <div class="drip" aria-hidden="true">
+    <span style="left:12%;animation-delay:0s"></span>
+    <span style="left:35%;animation-delay:1.2s"></span>
+    <span style="left:63%;animation-delay:0.6s"></span>
+    <span style="left:86%;animation-delay:2s"></span>
+  </div>
+
+  <!-- 開始畫面 -->
+  <section class="screen active" id="start">
+    <div class="ghost">👻</div>
+    <h1 class="zh">你有多了解我？</h1>
+    <p class="sub">10 道恐怖冷知識……<br>答錯的人，今晚會被我託夢。</p>
+    <button class="btn-main" id="startBtn">膽子夠就開始</button>
+  </section>
+
+  <!-- 題目畫面 -->
+  <section class="screen" id="quiz">
+    <div class="progress" id="progress"></div>
+    <div class="bar"><div class="bar-fill" id="barFill"></div></div>
+    <p class="question" id="question"></p>
+    <div class="options" id="options"></div>
+    <div class="feedback" id="feedback"></div>
+    <button class="btn-main" id="nextBtn">下一題 →</button>
+  </section>
+
+  <!-- 結果畫面 -->
+  <section class="screen" id="result">
+    <div class="ghost" id="resultIcon">💀</div>
+    <div class="score" id="score"></div>
+    <p class="verdict" id="verdict"></p>
+    <p class="sub" id="verdictSub"></p>
+    <button class="btn-main" id="restartBtn">再挑戰一次</button>
+  </section>
+</main>
+
+<script>
+  // ===== 題目都在這裡：想改題目，改這一段就好 =====
+  // answer 是正確答案的位置：0 = A、1 = B、2 = C、3 = D
+  const questions = [
+    { q: "我最怕的東西是什麼？", options: ["蟑螂", "鬼", "打針", "高的地方"], answer: 0 },
+    { q: "半夜 3 點，我最可能在做什麼？", options: ["熟睡中", "滑手機", "吃宵夜", "看恐怖片"], answer: 1 },
+    { q: "如果在走廊遇到鬼，我會？", options: ["尖叫逃跑", "冷靜拿手機拍下來", "跟它聊天", "直接昏倒"], answer: 1 },
+    { q: "我最喜歡的顏色是？", options: ["黑色", "血紅色", "白色", "其他顏色"], answer: 3 },
+    { q: "如果我是恐怖片角色，我會是？", options: ["第一個領便當的人", "活到最後的主角", "其實是兇手", "那個說「我去看看」的人"], answer: 0 },
+    { q: "我最喜歡的恐怖片類型是？", options: ["鬼片（看不見的最可怕）", "喪屍片", "殺人魔片", "我根本不敢看恐怖片"], answer: 1 },
+    { q: "一個人在家聽到怪聲，我會？", options: ["假裝沒聽到，戴上耳機", "拿著手機手電筒去查看", "立刻打給朋友", "把所有燈都打開"], answer: 1 },
+    { q: "如果能擁有一種「靈異能力」，我會選？", options: ["看得見鬼", "隱形", "預知未來", "讀心術"], answer: 2 },
+    { q: "去鬼屋玩，我通常是哪一種人？", options: ["走在最前面帶頭", "躲在中間抓著別人", "走最後面一直回頭看", "根本不會踏進去"], answer: 1 },
+    { q: "看恐怖片看到最可怕的地方，我會？", options: ["遮住眼睛但從指縫偷看", "把聲音關掉", "一臉淡定繼續吃東西", "直接快轉"], answer: 0 }
+  ];
+
+  const goodLines = ["答對了……你怎麼會知道？😨", "沒錯。你是不是一直在偷看我？👀", "正確……有點可怕。🕯️"];
+  const badLines = ["答錯了……背後涼涼的嗎？🩸", "錯！今晚記得開燈睡。💀", "不對……它已經在你身後了。👻"];
+
+  const letters = ["A", "B", "C", "D"];
+  let current = 0;
+  let score = 0;
+
+  const $ = (id) => document.getElementById(id);
+
+  function show(id) {
+    document.querySelectorAll(".screen").forEach((s) => s.classList.remove("active"));
+    $(id).classList.add("active");
+  }
+
+  function pick(list) { return list[Math.floor(Math.random() * list.length)]; }
+
+  function renderQuestion() {
+    const item = questions[current];
+    $("progress").textContent = `第 ${current + 1} / ${questions.length} 題`;
+    $("barFill").style.width = `${(current / questions.length) * 100}%`;
+    $("question").textContent = item.q;
+    $("feedback").textContent = "";
+    $("feedback").className = "feedback";
+    $("nextBtn").style.visibility = "hidden";
+
+    const box = $("options");
+    box.innerHTML = "";
+    item.options.forEach((text, i) => {
+      const btn = document.createElement("button");
+      btn.className = "option";
+      btn.innerHTML = `<span class="letter">${letters[i]}</span>`;
+      btn.append(text);
+      btn.addEventListener("click", () => choose(i));
+      box.appendChild(btn);
+    });
+  }
+
+  function choose(i) {
+    const item = questions[current];
+    const buttons = $("options").querySelectorAll(".option");
+    buttons.forEach((b) => (b.disabled = true));
+    buttons[item.answer].classList.add("correct");
+
+    if (i === item.answer) {
+      score++;
+      $("feedback").textContent = pick(goodLines);
+      $("feedback").classList.add("good");
+    } else {
+      buttons[i].classList.add("wrong");
+      $("feedback").textContent = pick(badLines);
+      $("feedback").classList.add("bad");
+      const f = $("flash");
+      f.classList.remove("on");
+      void f.offsetWidth;
+      f.classList.add("on");
+    }
+
+    $("nextBtn").textContent = current === questions.length - 1 ? "看結果 →" : "下一題 →";
+    $("nextBtn").style.visibility = "visible";
+  }
+
+  function showResult() {
+    $("barFill").style.width = "100%";
+    $("score").textContent = `${score} / ${questions.length}`;
+    let icon, verdict, sub;
+    if (score === questions.length) {
+      icon = "🖤"; verdict = "你是我的靈魂伴侶……字面上的。";
+      sub = "全對！你比我的影子還了解我。";
+    } else if (score >= 7) {
+      icon = "🕯️"; verdict = "你算是我的好朋友。";
+      sub = "還不錯，今晚可以安心睡覺……應該吧。";
+    } else if (score >= 4) {
+      icon = "👻"; verdict = "你對我的了解很表面。";
+      sub = "半夜聽到敲門聲，別開門。";
+    } else if (score >= 1) {
+      icon = "🩸"; verdict = "我們好像不太熟……";
+      sub = "沒關係，我會慢慢讓你認識我的。每天晚上。";
+    } else {
+      icon = "💀"; verdict = "我們真的認識嗎？";
+      sub = "零分……我會親自去找你聊聊。";
+    }
+    $("resultIcon").textContent = icon;
+    $("verdict").textContent = verdict;
+    $("verdictSub").textContent = sub;
+    show("result");
+  }
+
+  $("startBtn").addEventListener("click", () => {
+    current = 0; score = 0;
+    renderQuestion();
+    show("quiz");
+  });
+
+  $("nextBtn").addEventListener("click", () => {
+    current++;
+    if (current < questions.length) renderQuestion();
+    else showResult();
+  });
+
+  $("restartBtn").addEventListener("click", () => {
+    current = 0; score = 0;
+    renderQuestion();
+    show("quiz");
+  });
+</script>
+</body>
+</html>
